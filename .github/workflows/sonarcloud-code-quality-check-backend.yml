@@ -44,8 +44,8 @@ jobs:
         with:
           projectBaseDir: .
           args: >
-            -Dsonar.organization=${{ env.SONAR_ORGANIZATION }}
-            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=@${{ vars.SONAR_ORGANIZATION }}
+            -Dsonar.projectKey=@${{ vars.SONAR_PROJECT_KEY }}
             -Dsonar.sources=data/
             -Dsonar.sources_exclusions=**/__pycache__/**;data/src/test/
             -Dsonar.tests=data/src/test/
