@@ -6,8 +6,6 @@ on:
     branches:
       - staging
     types: [opened, synchronize, reopened]
-    paths:
-      - 'data/**'
 
 permissions:
   pull-requests: read # allows SonarCloud to decorate PRs with analysis results
