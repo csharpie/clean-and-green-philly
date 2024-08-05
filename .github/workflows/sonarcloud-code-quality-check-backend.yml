@@ -1,10 +1,10 @@
 name: SonarCloud Code Quality Check (Backend)
 
 on:
-  push:
+  workflow_dispatch:
+  pull_request:
     branches:
       - staging
-  pull_request:
     types: [opened, synchronize, reopened]
     paths:
       - 'data/**'
@@ -38,6 +38,7 @@ jobs:
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
+        if: always()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
