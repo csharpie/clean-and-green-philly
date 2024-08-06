@@ -1,0 +1,78 @@
+name: SonarCloud Code Quality Check
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - staging
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'data/**'
+
+permissions:
+  pull-requests: read # allows SonarCloud to decorate PRs with analysis results
+
+jobs:
+  sonarcloudBackend:
+    name: SonarCloud Backend Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11.4' # Specify your Python version
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          pytest --maxfail=1 --disable-warnings -q
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: ./data/
+          args: >
+            -Dsonar.organization=@${{ vars.SONAR_ORGANIZATION }}
+            -Dsonar.projectKey=@${{ vars.SONAR_PROJECT_KEY_BACKEND }}
+            -Dsonar.sources=data/
+            -Dsonar.sources_exclusions=**/__pycache__/**;data/src/test/
+            -Dsonar.tests=data/src/test/
+  sonarcloudFrontendScan:
+    name: SonarCloud Frontend Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
+
+      - name: Install dependencies
+        run: |
+          npm i
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: .
+          args: >
+            -Dsonar.organization=@${{ vars.SONAR_ORGANIZATION }}
+            -Dsonar.projectKey=@${{ vars.SONAR_PROJECT_KEY_FRONTEND }}
+            -Dsonar.sources_exclusions=**/_node_modules/**
